@@ -3,32 +3,34 @@ import { ProductSku } from "@application/entities/products/sku";
 import { ProductRepository } from "@application/repositories/product-repository";
 import { Injectable } from "@nestjs/common";
 
-interface AddProductImageRequest {
+interface AddProductSkuImageRequest {
     productId: string;
+    skuId?: string;
     url: string;
     altText?: string;
     featured: boolean;
     position: number;
 }
 
-export interface AddProductImageResponse {
+export interface AddProductSkuImageResponse {
     image: ProductImage;
 }
 
 @Injectable()
-export class AddProductImage {
+export class AddProductSkuImage {
     constructor(
         private productRepository: ProductRepository
     ) { }
 
     async execute(
-        request: AddProductImageRequest
-    ): Promise<AddProductImageResponse> {
+        request: AddProductSkuImageRequest
+    ): Promise<AddProductSkuImageResponse> {
 
-        const { productId, url, altText, featured, position } = request;
+        const { productId, skuId, url, altText, featured, position } = request;
 
         const image = new ProductImage({
             productId,
+            skuId,
             url,
             altText,
             featured,

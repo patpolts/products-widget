@@ -146,4 +146,16 @@ export class ProductSku {
         return this.props.createdAt;
     }
 
+    get deletedAt(): Date | null{
+        return this.props.deletedAt ?? null;
+    }
+
+    set deletedAt(date: Date | null){
+        this.props.deletedAt = date;
+    }
+
+    get isActive(): boolean{
+        return this.props.deletedAt ? false : true;
+    }
+
 }

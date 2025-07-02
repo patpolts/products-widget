@@ -1,8 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ProductAttribute } from "@application/entities/products/attribute";
-import { ProductImage } from "@application/entities/products/image";
 import { Product } from "@application/entities/products/product";
-import { ProductSku } from "@application/entities/products/sku";
 import { ProductRepository } from "@application/repositories/product-repository";
 
 interface AddProductRequest {

@@ -11,13 +11,11 @@ interface AddProductSkuRequest {
     dimensions?: string;
     price: number;
     stock: number;
-    images?: ProductImage[]
+    deletedAt: Date | null;
 }
 
 export interface AddProductSkuResponse {
-    error: boolean;
-    message: string;
-    sku?: ProductSku;
+    sku: ProductSku;
 }
 
 @Injectable()
@@ -29,33 +27,23 @@ export class AddProductSku {
     async execute(
         request: AddProductSkuRequest
     ): Promise<AddProductSkuResponse> {
-        try {
-            const {productId, code, size, color, dimensions, price, stock, images } = request;
+        const { productId, code, size, color, dimensions, price, stock, deletedAt } = request;
 
-            const sku = new ProductSku({
-                productId,
-                code,
-                size,
-                color,
-                dimensions,
-                price,
-                stock,
-                images
-            });
+        const sku = new ProductSku({
+            productId,
+            code,
+            size,
+            color,
+            dimensions,
+            price,
+            stock,
+            deletedAt
+        });
 
-            await this.productRepository.createSku(sku)
+        await this.productRepository.createSku(sku)
 
-            return {
-                error: false,
-                message: "Product saved successfully",
-                sku
-            }
-            
-        } catch (error) {
-            return {
-                error: true,
-                message: error instanceof Error ? error.message : "An unexpected error occurred",
-            }
+        return {
+            sku
         }
     }
 }

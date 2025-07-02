@@ -8,6 +8,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
+  app.enableCors({
+    origin: [(process.env.APP_URL ?? 'http://localhos:3333/')],
+    credentials: true
+  })
+
   const config = new DocumentBuilder()
     .setTitle('Produtos Widgets API')
     .setDescription('API que gerencia produtos, skus, categorias e gerenciadores.')

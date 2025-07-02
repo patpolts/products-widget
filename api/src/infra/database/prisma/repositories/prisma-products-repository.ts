@@ -7,6 +7,9 @@ import { ProductSku } from "@application/entities/products/sku";
 import { PrismaProductMapper } from "../mappers/prisma-product-mapper";
 import { Injectable } from "@nestjs/common";
 import { Prisma } from "@prisma/client";
+import { PrismaProductSkuMapper } from "../mappers/prisma-product-sku-mapper";
+import { PrismaProductImageMapper } from "../mappers/prisma-product-image-mapper";
+import { PrismaProductSkuImageMapper } from "../mappers/prisma-product-sku-image-mapper";
 
 @Injectable()
 export class PrismaProductsRepository implements ProductRepository {
@@ -51,42 +54,7 @@ export class PrismaProductsRepository implements ProductRepository {
             }
         });
 
-        if (!skus || skus.length === 0) {
-            return [];
-        }
-
-        const skuImages = await this.prismaService.productImageSku.findMany({
-            where: {
-                skuId: {
-                    in: skus.map(sku => sku.id)
-                }
-            },
-            orderBy: {
-                position: "asc"
-            }
-        });
-
-        return skus.map(sku => {
-            return new ProductSku({
-                productId: sku.productId,
-                code: sku.code,
-                price: Number(sku.price),
-                stock: sku.stock,
-                images: skuImages.map(img => {
-                    return new ProductImage({
-                        productId: sku.productId,
-                        skuId: sku.id,
-                        url: img.url,
-                        altText: img.altText ?? '',
-                        featured: img.featured,
-                        position: img.position
-                    })
-                }),
-                createdAt: sku.createdAt,
-                updatedAt: sku.updatedAt,
-                deletedAt: sku.deletedAt
-            }, sku.id);
-        });
+        return skus.map((sku) => PrismaProductSkuMapper.toDomain(sku));
     }
 
     async getImages(productId: string): Promise<ProductImage[]> {
@@ -99,19 +67,7 @@ export class PrismaProductsRepository implements ProductRepository {
             }
         });
 
-        if (!images || images.length === 0) {
-            return [];
-        }
-
-        return images.map(image => {
-            return new ProductImage({
-                productId: image.productId,
-                url: image.url,
-                altText: image.altText ?? '',
-                featured: image.featured,
-                position: image.position
-            }, image.id);
-        });
+        return images.map((img) => PrismaProductImageMapper.toDomain(img));
     }
 
     async getAttributes(productId: string): Promise<ProductAttribute[]> {
@@ -144,58 +100,32 @@ export class PrismaProductsRepository implements ProductRepository {
     }
 
     async createSku(sku: ProductSku): Promise<void> {
-        const response = await this.prismaService.productSku.create({
-            data: {
-                productId: sku.productId,
-                code: sku.code,
-                price: sku.price.toString(),
-                stock: sku.stock,
-                createdAt: sku.createdAt,
-            },
-            select: { id: true }
+        const raw = PrismaProductSkuMapper.toPrisma(sku);
+        
+        await this.prismaService.productSku.create({
+            data: raw,
         });
 
-        if (sku.images && sku.images.length > 0) {
-            await Promise.all(sku.images.map(image => {
-                return this.prismaService.productImageSku.create({
-                    data: {
-                        skuId: response.id,
-                        url: image.url,
-                        altText: image.altText,
-                        featured: image.featured,
-                        position: image.position
-                    }
-                });
-            }));
-        }
     }
 
     async createImage(image: ProductImage): Promise<void> {
         if (image.skuId) {
+            const raw = PrismaProductSkuImageMapper.toPrisma(image);
             await this.prismaService.productImageSku.create({
                 data: {
-                    skuId: image.skuId,
-                    url: image.url,
-                    altText: image.altText,
-                    featured: image.featured,
-                    position: image.position
+                    ...raw,
+                    sku: {
+                        connect: { id: image.skuId }
+                    }
                 }
             });
-            return;
 
         } else {
-            if (!image.imageId) throw new Error("Image ID is required for product images");
+            const raw = PrismaProductImageMapper.toPrisma(image);
 
             await this.prismaService.productImage.create({
-                data: {
-                    productId: image.productId,
-                    url: image.url,
-                    altText: image.altText,
-                    featured: image.featured,
-                    position: image.position
-                }
+                data: raw
             });
-            return;
 
         }
     }

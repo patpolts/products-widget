@@ -8,6 +8,7 @@ import { DatabaseModule } from "@infra/database/database.module";
 import { GetProduct } from "@application/use-cases/products/get-product";
 import { UpdateProduct } from "@application/use-cases/products/update-product";
 import { RemoveProduct } from "@application/use-cases/products/remove-product";
+import { AddProductSkuImage } from "@application/use-cases/products/add-product-sku-image";
 
 @Module({
     imports: [DatabaseModule],
@@ -18,6 +19,7 @@ import { RemoveProduct } from "@application/use-cases/products/remove-product";
         AddProduct,
         AddProductSku,
         AddProductImage,
+        AddProductSkuImage,
         UpdateProduct,
         RemoveProduct
     ]
