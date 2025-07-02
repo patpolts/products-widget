@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output = "../../docs/erd.svg"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AttributeType {
+  TEXT
+  NUMBER
+  BOOLEAN
+  DATE
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  slug        String    @unique
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  skus       ProductSku[]
+  images     ProductImage[]
+  attributes ProductAttribute[]
+  reviews    ProductReview[]
+
+  @@index([categoryId], name: "idx_product_category")
+  @@index([slug], name: "idx_product_slug")
+  @@index([createdAt], name: "idx_product_created_at")
+}
+
+model ProductSku {
+  id         String    @id @default(uuid())
+  product    Product   @relation(fields: [productId], references: [id])
+  productId  String
+  code       String    @unique
+  size       String?
+  color      String?
+  dimensions String?
+  price      Decimal   @default(0.0)
+  stock      Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  images ProductImageSku[]
+
+  @@index([productId], name: "idx_product_sku_product")
+  @@index([price], name: "idx_product_sku_price")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid())
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  url       String
+  altText   String?
+  featured  Boolean @default(false)
+  position  Int     @default(0)
+
+  @@index([productId], name: "idx_product_image_product")
+  @@index([featured], name: "idx_product_image_featured")
+}
+
+model ProductImageSku {
+  id       String     @id @default(uuid())
+  sku      ProductSku @relation(fields: [skuId], references: [id])
+  skuId    String
+  url      String
+  altText  String?
+  featured Boolean    @default(false)
+  position Int        @default(0)
+
+  @@index([skuId], name: "idx_product_image_sku")
+  @@index([featured], name: "idx_product_image_sku_featured")
+}
+
+model ProductAttribute {
+  id          String            @id @default(uuid())
+  product     Product           @relation(fields: [productId], references: [id])
+  productId   String
+  attribute   CategoryAttribute @relation(fields: [attributeId], references: [id])
+  attributeId String
+  value       String
+
+  @@index([productId], name: "idx_product_attribute_product")
+  @@index([attributeId], name: "idx_product_attribute_attribute")
+}
+
+model ProductReview {
+  id        String   @id @default(uuid())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId String
+  rating    Int
+  comment   String?
+  author    String?
+  createdAt DateTime @default(now())
+
+  @@index([productId], name: "idx_product_review_product")
+  @@index([createdAt], name: "idx_product_review_created_at")
+  @@index([rating], name: "idx_product_review_rating")
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  slug        String     @unique
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  parentId    String?
+  children    Category[] @relation("CategoryHierarchy")
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+
+  products   Product[]
+  attributes CategoryAttribute[]
+
+  @@index([parentId], name: "idx_category_parent")
+}
+
+model CategoryAttribute {
+  id               String             @id @default(uuid())
+  category         Category           @relation(fields: [categoryId], references: [id])
+  categoryId       String
+  name             String
+  type             AttributeType
+  ProductAttribute ProductAttribute[]
+
+  @@index([categoryId], name: "idx_category_attribute_category")
+}
+
+model ProductManager {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  isSuper   Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
