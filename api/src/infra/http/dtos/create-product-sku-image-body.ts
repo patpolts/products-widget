@@ -1,11 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {IsBoolean,IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, } from "class-validator";
 
-export class CreateProductImageBody {
+export class CreateProductSkuImageBody {
     @ApiProperty({example: 'The product id related to image'})
     @IsNotEmpty()
     @IsUUID()
     productId: string;
+    
+    @ApiProperty({example: 'The id of the image'})
+    @IsUUID()
+    skuId: string;
 
     @ApiProperty({example: 'The url of the image'})
     @IsNotEmpty()

@@ -22,6 +22,8 @@ export class ProductImage {
 
         if(!props.productId.trim()) throw new Error('Product ID cannot be empty');
         if(!props.url.trim()) throw new Error('Image URL cannot be empty');
+        if(props.imageId && props.skuId) throw new Error("A image can't be registered as both product and sku image");
+        
 
         this._id = id ?? randomUUID();
         this.props = {
