@@ -1,0 +1,22 @@
+{
+  "name": "products-widget",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:app\"",
+    "dev:api": "npm run start:dev --prefix api",
+    "dev:app": "npm run dev --prefix app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github:patpolts/products-widget.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
