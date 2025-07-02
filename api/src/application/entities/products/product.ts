@@ -1,11 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import { Replace } from "@helpers/Replace";
+import { ProductSku } from './sku';
+import { ProductImage } from './image';
+import { ProductAttribute } from './attribute';
 
 export interface ProductProps {
     name: string;
     description: string;
     slug: string;
     categoryId: string;
+    skus?: ProductSku[];
+    images?: ProductImage[];
+    attributes?: ProductAttribute[];
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -31,6 +37,9 @@ export class Product {
         
         this.props = {
             ...props,
+            skus: props.skus ?? [],
+            images: props.images ?? [],
+            attributes: props.attributes ?? [],
             createdAt: props.createdAt ?? new Date(),
             updatedAt: props.updatedAt ?? new Date(),
             deletedAt: props.deletedAt ?? null,
@@ -110,6 +119,34 @@ export class Product {
         this.touch();
     }
 
+    get skus(): ProductSku[] {
+        return this.props.skus ?? [];
+    }
+
+    set skus(skus: ProductSku[]) {
+        this.props.skus = skus;
+        this.touch();
+
+    }
+
+    get images(): ProductImage[] {
+        return this.props.images ?? []; 
+    }
+
+    set images(images: ProductImage[]) {
+        this.props.images = images;
+        this.touch();
+    }
+
+    get attributes(): ProductAttribute[] {
+        return this.props.attributes ?? [];
+    }
+
+    set attributes(attributes: ProductAttribute[]) {
+        this.props.attributes = attributes;
+        this.touch();
+    }
+
     get createdAt(): Date {
         return this.props.createdAt;
     }
@@ -134,4 +171,5 @@ export class Product {
     private touch(){
         this.props.updatedAt = new Date();
     }
+    
 }
