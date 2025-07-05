@@ -1,3 +1,34 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import  "tailwindcss";
+@import "@nuxt/ui";
+
+@theme {
+    --font-sans: 'Montserrat',  'Public Sans', 'Open Sans', sans-serif;
+    
+    
+}
+
+:root{
+    --ui-primary: var(--ui-color-primary-500);
+    --ui-secondary: var(--ui-color-secondary-800);
+
+    --ui-text-info: var(--ui-color-text-info-500);
+}
+
+.dark{
+    --ui-primary: var(--ui-color-primary-200);
+    --ui-secondary: var(--ui-color-secondary-200);
+
+    --ui-text-info: var(--ui-color-text-info-300);
+}
+
+
+html,body{
+    font-size: 1em; 
+    max-width: 100%;
+}
+
+button[type="button"],
+button[type="submit"],
+button[type="reset"]{
+    cursor: pointer;
+}

@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-15',
   devtools: { enabled: true },
@@ -11,5 +10,11 @@ export default defineNuxtConfig({
     port: 3001,
   },
   css: ['@/assets/css/tailwind.css'],
-  modules: [],
+  modules: ['@nuxt/ui'],
+  fonts: {
+    provider: 'google',
+    families: [{
+      name: 'Montserrat'
+    }] 
+  }
 })
