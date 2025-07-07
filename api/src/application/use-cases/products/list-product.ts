@@ -1,9 +1,18 @@
+import { ProductPagination } from "@application/entities/products/pagination";
 import { Product } from "@application/entities/products/product";
 import { ProductRepository } from "@application/repositories/product-repository";
 import { Injectable } from "@nestjs/common";
 
-export interface ListProductResponse {
+interface ListProductRequest{
+    page?: number;
+    limit?: number;
+    categoryId?: string;
+    order?: 'asc' | 'desc';
+}
+
+interface ListProductResponse {
     products: Product[];
+    pagination?: ProductPagination;
 }
 
 @Injectable()
@@ -12,8 +21,21 @@ export class ListProduct {
         private productRepository: ProductRepository
     ) { }
 
-    async execute(): Promise<ListProductResponse> {
-        const products = await this.productRepository.getAll();
+    async execute(request?: ListProductRequest): Promise<ListProductResponse> {
+        let pagination:ProductPagination | undefined;
+        const categoryId = request?.categoryId;
+
+        if(request?.page && request?.limit){
+            pagination = new ProductPagination({
+                page: request.page,
+                limit: request.limit,
+                total: 0
+            });
+
+            const totalProducts = await this.productRepository.countProducts(categoryId);
+            pagination.total = totalProducts;
+        }
+        const products = await this.productRepository.getAll(pagination,categoryId,request?.order ?? 'desc');
 
         for(const p of products){
             const productSkus = await this.productRepository.getSkus(p.id);
@@ -24,7 +46,8 @@ export class ListProduct {
         }
 
         return {
-            products
+            products,
+            pagination
         }
 
     }

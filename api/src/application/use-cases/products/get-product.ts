@@ -2,11 +2,20 @@ import { Product } from "@application/entities/products/product";
 import { ProductRepository } from "@application/repositories/product-repository";
 import { Injectable } from "@nestjs/common";
 
+type Pagination = {
+    page: number;
+    limit: number;
+    total: number;
+    lastPAge: number;
+}
+
 interface GetProductRequest {
-    productId: string;
+    productId?: string;
+    slug?: string;
 }
 interface GetProductResponse {
     product: Product;
+    pagination?: Pagination;
 }
 
 @Injectable()
@@ -16,8 +25,10 @@ export class GetProduct {
     ) { }
 
     async execute(request: GetProductRequest): Promise<GetProductResponse | null> {
-        const { productId } = request;
-        const product = await this.productRepository.getById(productId);
+        const { productId, slug } = request;
+        const product = productId ? 
+            await this.productRepository.getById(productId) : 
+                ( slug ? await this.productRepository.getBySlug(slug) : null);
 
         if (!product) return null;
 

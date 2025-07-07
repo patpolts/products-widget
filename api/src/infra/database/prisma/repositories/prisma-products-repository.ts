@@ -10,21 +10,28 @@ import { Prisma } from "@prisma/client";
 import { PrismaProductSkuMapper } from "../mappers/prisma-product-sku-mapper";
 import { PrismaProductImageMapper } from "../mappers/prisma-product-image-mapper";
 import { PrismaProductSkuImageMapper } from "../mappers/prisma-product-sku-image-mapper";
+import { ProductPagination } from "@application/entities/products/pagination";
+import { CreateProductSkuBody } from "@infra/http/dtos/create-product-sku-body";
 
 @Injectable()
 export class PrismaProductsRepository implements ProductRepository {
     constructor(
         private prismaService: PrismaService
     ) { }
-
-    async getAll(): Promise<Product[]> {
+    async getAll(paginate?: ProductPagination,categoryId?:string,order?: string): Promise<Product[]> {
+        const orderBy = order ?? 'desc';
+        if(orderBy !== 'asc' && orderBy !== 'desc') throw new Error("Erro fatal, parametro inválido");
+        
         const products = await this.prismaService.product.findMany({
-            where: {
-                deletedAt: null
+             where: {
+                deletedAt: null,
+                ...(categoryId && { categoryId }),
             },
             orderBy: {
-                createdAt: "desc"
-            }
+                createdAt: orderBy
+            },
+            skip: paginate?.offset,
+            take: Number(paginate?.limit)
         });
 
         return products.map(PrismaProductMapper.toDomain);
@@ -42,6 +49,41 @@ export class PrismaProductsRepository implements ProductRepository {
 
         return PrismaProductMapper.toDomain(product);
     }
+    
+    async getByCategoryId(categoryId: string): Promise<Product[]> {
+        const products = await this.prismaService.product.findMany({
+            where: {
+                categoryId
+            },
+            orderBy: {
+                createdAt: "desc"
+            }
+        });
+
+        return products.map((product) => PrismaProductMapper.toDomain(product));
+    }
+
+    async getBySlug(slug: string): Promise<Product | null> {
+        const product = await this.prismaService.product.findUnique({
+            where: {
+                slug
+            }
+        });
+
+        if(!product) return null;
+
+        return PrismaProductMapper.toDomain(product);
+    }
+    
+    async countProducts(categoryId?:string): Promise<number> {
+        return await this.prismaService.product.count({
+            where: {
+                deletedAt: null,
+                ...(categoryId && { categoryId }),
+            },
+        });
+    }
+
 
     async getSkus(productId: string): Promise<ProductSku[]> {
         const skus = await this.prismaService.productSku.findMany({
