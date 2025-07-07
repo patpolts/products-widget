@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CreateProductBody } from "@infra/http/dtos/create-product-body";
 import { AddProduct } from "@application/use-cases/products/add-product";
 import { ProductSku } from "@application/entities/products/sku";
@@ -20,12 +20,16 @@ import { ProductImageViewModel } from "../view-models/product-image-view-model";
 import { CreateProductSkuImageBody } from "../dtos/create-product-sku-image-body";
 import { AddProductSkuImage } from "@application/use-cases/products/add-product-sku-image";
 import { ProductSkuImageViewModel } from "../view-models/product-image-sku-view-model";
+import { GetProductPaginationQuery } from "../dtos/get-product-pagination-query";
+import { ProductPaginationViewModel } from "../view-models/product-pagination-view-model";
+import { FilterProductByCategory } from "@application/use-cases/products/filter-product-by-category";
 
 @ApiTags('products')
 @Controller('products')
 export class ProductController {
     constructor(
         private getProduct: GetProduct,
+        private filterProductCategory: FilterProductByCategory,
         private listProducts: ListProduct,
         private addProducts: AddProduct,
         private addProductSku: AddProductSku,
@@ -36,7 +40,7 @@ export class ProductController {
     ) { }
 
     @Get()
-    @ApiOperation({ summary: 'List of active products' })
+    @ApiOperation({ summary: 'List of active products or a list of active products from categoryId' })
     @ApiOkResponse({
         description: 'Products list or empty array.',
         schema: {
@@ -71,24 +75,67 @@ export class ProductController {
                         ],
                         "deletedAt": null
                     }
-                ]
+                ],
+                "paginate": {
+                    page: 1,
+                    limit: 10,
+                    total: 100,
+                    lastPage: 50
+                }
             }
         }
     })
-    async list() {
-        const { products } = await this.listProducts.execute();
+    async list(@Query() query: GetProductPaginationQuery, @Query('categoryId') categoryId?: string , @Query('order') order?: 'asc' | 'desc') {
+        const {page, limit} = query;
+        const { products, pagination } = await this.listProducts.execute({
+            page: page ?? undefined,
+            limit: limit ?? undefined,
+            categoryId: categoryId ?? undefined,
+            order: order ?? 'desc'
+        });
 
         return {
-            product: products.map((product) => ProductViewModel.toHttp(product))
+            product: products.map((product) => ProductViewModel.toHttp(product)),
+            pagination: pagination ? ProductPaginationViewModel.toHttp(pagination) : undefined,
         }
     }
 
-    @ApiOperation({ summary: 'Get a product details.' })
+    @ApiOperation({ summary: 'Get a product details by ID.' })
     @ApiResponse({ status: 200, description: 'Success: Product details.' })
     @ApiResponse({ status: 404, description: 'Error: Product not found.' })
     @Get(':id')
     async productDetail(@Param('id') id: string) {
         const response = await this.getProduct.execute({ productId: id });
+
+        if (!response || !response.product) {
+            return {
+                product: null
+            };
+        }
+
+        return {
+            product: ProductViewModel.toHttp(response.product)
+        }
+    }
+    @ApiOperation({ summary: 'Get a list of product by category ID.' })
+    @ApiResponse({ status: 200, description: 'Success: Product list.' })
+    @ApiResponse({ status: 404, description: 'Error: Product not found.' })
+    @Get('categories/:id')
+    async productByCategory(@Param('id') id: string) {
+        const {products} = await this.filterProductCategory.execute({ categoryId: id });
+
+
+        return {
+            product: products.map((p) => ProductViewModel.toHttp(p))
+        }
+    }
+
+    @ApiOperation({ summary: 'Get a product details by slug.' })
+    @ApiResponse({ status: 200, description: 'Success: Product details.' })
+    @ApiResponse({ status: 404, description: 'Error: Product not found.' })
+    @Get('slug/:slug')
+    async productDetailBySlug(@Param('slug') slug: string) {
+        const response = await this.getProduct.execute({ slug });
 
         if (!response || !response.product) {
             return {

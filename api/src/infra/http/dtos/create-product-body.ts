@@ -1,8 +1,4 @@
-import { Type } from "class-transformer";
-import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsUUID, Matches, ValidateNested } from "class-validator";
-import { CreateProductSkuBody } from "./create-product-sku-body";
-import { CreateProductImageBody } from "./create-product-image-body";
-import { CreateProductAttributeBody } from "./create-product-attribute-body";
+import {IsBoolean, IsNotEmpty, IsUUID, Matches } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreateProductBody {

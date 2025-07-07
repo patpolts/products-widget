@@ -14,7 +14,8 @@ Aplicação de produtos com um monorepo incluindo `/api`, backend feito com Nest
 
 ---
 
-## Estrutura Backend 
+## Estrutura  
+- **Backend** 
 ```bash
 src/
 ├── application/                            # Casos de uso / serviços
@@ -38,6 +39,22 @@ src/
 ├── prisma/                                 # Configurações e schemas do prisma
 └── tests/                                  # Configurações gerais de testes
 ```  
+- **Frontend**  
+```bash  
+├── assets/         #Estilos, imagens e etc
+├── components/     #Componentes
+├── ├── ui/         #Componentes genéricos de UI
+├── composables/    #Orquestração de casos de uso
+├── layouts/        #Configurações de layout
+├── services/       #Serviços de comunicação com a API
+├── view-models/    #Tipos, interfaces. models compartilhados
+├── pages/          #Páginas da aplicação
+├── server/         #Servidor nuxt
+├── stores/         #Gerenciamento de estados globais
+├── helpers/        #Funções utilitárias
+├── public/         #Arquivos estáticos
+└── nuxt.config.ts
+```
 ---  
 
 ## Instalação e configuração   
@@ -54,7 +71,7 @@ src/
 - Gere as migrações prisma:  
   `npx prisma migrate dev`  
   `npx prisma generate`   
-- (Opicional)Rode o prisma studio para cadastros / visualizações da base em  `localhost:5555/:  
+- (Opicional)Rode o prisma studio para cadastros / visualizações da base em  `http://localhost:5555/:  
   `npx prisma studio`  
 - Rode o servidor dentro da pasta `api`:  
   `npm run start:dev`   
@@ -65,18 +82,66 @@ src/
 - Rode o app:  
   `npm run dev` 
 
- Também é possivel rodar o backend e frontend simultaneamente executandoo comando abaixo na raiz do projeto:  
+ Também é possivel rodar o backend e frontend simultaneamente executando o comando abaixo na raiz do projeto:  
  `npm run dev`  
  ---
 
  ### Documentação api  
- Para acessar e visualizar as rotas existentes na api acesse `htpp:localhost/api` com o servidor da api rodando.  
+ Para acessar e visualizar as rotas existentes na api acesse `htpp://localhost/api` com o servidor da api rodando.  
 
 ---  
 
+### Sobre aPI e Funcionalidades  
+- **CRUD produtos e categorias**  
+  Gerenciamento de produtos, categorias e imagens de produtos, imagens de SKUs não está funcional  
+  - **Lógica de cadastro**  
+    - Cadastre a categoria ou categorias, o parametro `categoryId` é obrigatório para o cadastro do produto exemplo de request:  
+      ```bash  
+      {
+        "name": "Categoria teste 1",
+        "description": "This is a test ub category 1",
+        "slug": "category-test-1",
+        "parentId": null, 
+        "isActive": true
+      }
+      ```  
+    > ⚠️ **Observação:** No frontend a página de detalhe do produto exibe apenas a categoria principal do produto com o link para a pagina da categoria contendo os produtos existentes nela.
+    - Cadastre o produto, exemplo de request:
+      ```bash  
+      {
+        "name": "Test Product ",
+        "description": "This is the test product, lorem ipsum lorem at num lorem,  lorem ipsum lorem at num lorem  lorem. ",
+        "slug": "product-test-o",
+        "categoryId": "f16f1734-11ff-4a85-a555-a33779ba568b", 
+        "isActive": true
+      }
+      ```  
+    - Cadastre o sku, exemplo de request:  
+    ```bash
+    {
+      "productId": "42e7f65d-73e8-45bb-ade3-defba3ed5e07",
+      "code": "SKU-TEST-E-001",
+      "price": 2999,
+      "color": "azul",
+      "dimensions": "10x10",
+      "size": "M"
+      "stock": 100,
+      "deletedAt": null
+  }
+  ```
+    - Cadastre o a imagem do produto, exemplo de request:  
+    ```bash
+    {
+      "productId": "7eda9cf9-f9a0-4152-a61c-8f39e544110b",
+      "url": "https://img1.sellvia.com/uploads/2024/03/07/65218d7f718038763e3479b4f9fb523f.jpg",
+      "altText": "Test Image D 2",
+      "featured": false,
+      "position": 1
+    }
+  ```  
+  - **Request de produtos**  
+  > O request de `/product`  retorna a paginação e possui 2 parametros query extras opicionais: `categoryId` do tipo UUID e `order` do tipo asc ou desc
+
  ## TODO:  
- - API de Cadastro e lógica de negocios de categorias, atualmente funciona via prisma studio  porém sem logica de negocio
  - API de cadastro e logica de negocios de managers, atualmente funciona via prisma studio porém sem lógica de negocio  
- - Paginação  lista de produtos  
- - Layout e funcionalidades frontend  
  - Completar testes unitários

@@ -1,3 +1,154 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import  "tailwindcss";
+@import "@nuxt/ui";
+
+@theme default{
+    /* Tipografia */
+    --font-sans: 'Montserrat',  'Public Sans', 'Open Sans', sans-serif;
+
+    /* Espaçamentos */
+    --ui-padding-sm: 0.8rem;
+    --ui-padding-md: 1.5rem;
+    --ui-padding-lg: 2rem;
+    --ui-padding-xl: 2.5rem;
+
+}
+
+:root{
+    --ui-primary: var(--ui-color-primary-600);
+    --ui-secondary: var(--ui-color-secondary-800);
+    --ui-tertiary: var(--ui-color-tertiary-800);
+    --ui-info: var(--ui-color-info-900);
+    --ui-neutral: var(--ui-color-neutral-800);
+    --ui-warning: var(--ui-color-warning-500);
+    
+    --ui-text-primary: var(--ui-color-primary-800);
+    --ui-text-info: var(--ui-color-text-info-500);
+    
+    --box-shadow-color: hsla(20,14%,5%,0.2);
+
+
+    .content{
+        @apply bg-slate-50;
+    }
+    
+}
+
+.dark{
+    --ui-primary: var(--ui-color-primary-200);
+    --ui-secondary: var(--ui-color-secondary-200);
+    --ui-tertiary: var(--ui-color-tertiary-400);
+    --ui-neutral: var(--ui-color-neutral-200);
+    --ui-info: var(--ui-color-info-200);
+    --ui-warning: var(--ui-color-warning-100);
+
+    --ui-text-info: var(--ui-color-text-info-300);
+
+    --box-shadow-color: hsla(210,60%,98%,0.2);
+
+    .content{
+        @apply bg-stone-950;
+    }
+
+    
+}
+
+html,body{
+    font-size: 14px; 
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+main{
+    @apply w-auto h-auto m-0 p-0;
+}
+
+header > h1{
+    @apply text-primary font-bold text-2xl md:text-4xl tracking-wide;
+}
+
+footer{
+    @apply p-[--ui-padding-sm]  
+            md:p-[--ui-padding-md] 
+            lg:p-[--ui-padding-lg] 
+            xl:p-[--ui-padding-lg] 
+}
+
+button[type="button"],
+button[type="submit"],
+button[type="reset"]{
+    cursor: pointer;
+}
+
+.page-header{
+    @apply 
+        border-solid
+            border-b-3
+            border-primary
+        w-full 
+        max-w-[calc(100%-var(--ui-padding-sm)*2)] 
+            md:max-w-[calc(100%-var(--ui-padding-md)*2)] 
+            lg:max-w-[calc(100%-var(--ui-padding-lg)*2)] 
+            xl:max-w-[calc(100%-var(--ui-padding-lg)*2)] 
+        px-0 
+            md:px-0 
+            lg:px-0 
+            xl:px-0 
+        pt-0 
+            md:pt-0 
+            lg:pt-0
+            xl:pt-0
+        pb-[var(--ui-padding-sm)] 
+            md:pb-[var(--ui-padding-md)] 
+            lg:pb-[var(--ui-padding-lg)]
+            xl:pb-[var(--ui-padding-xl)];
+            
+}
+.page-header > h1{
+    @apply text-secondary text-2xl m-auto p-0 font-semibold tracking-wide;
+}
+
+.page-header > p{
+    @apply text-xl text-neutral-600 font-light tracking-tight;
+}
+
+.content{
+    @apply 
+        w-full h-auto
+        max-w-[calc(100%-var(--ui-padding-sm)*2)] 
+            md:max-w-[calc(100%-var(--ui-padding-md)*2)] 
+            lg:max-w-[calc(100%-var(--ui-padding-lg)*2)] 
+            xl:max-w-[calc(100%-var(--ui-padding-lg)*2)] 
+        max-h-[calc(100%-var(--ui-padding-sm)*2)] 
+            md:max-h-[calc(100%-var(--ui-padding-md)*2)] 
+            lg:max-h-[calc(100%-var(--ui-padding-lg)*2)] 
+            xl:max-h-[calc(100%-var(--ui-padding-lg)*2)] 
+        mx-auto 
+        rounded-sm;
+}
+
+.content-shadow{
+    @apply shadow-[0_2px_6px_0_var(--box-shadow-color)];
+}
+
+.products-card-spacing{
+    @apply p-2 md:p-3 lg:p-4 xl:p-5;
+}
+.product-content{
+    @apply w-full h-auto text-center relative;
+}
+.product-content-spacing{
+    @apply p-[var(--ui-padding-sm)] 
+        md:p-[var(--ui-padding-md)]
+        lg:p-[var(--ui-padding-lg)]
+        xl:p-[var(--ui-padding-xl)]
+}
+.product-content-carousel{
+    @apply w-[90%] h-[400px] mx-auto mb-2 mt-0;
+}
+.product-content-carousel figure{
+    @apply h-[400px];
+}
+.product-content-carousel figure > img{
+    @apply rounded-sm;
+}

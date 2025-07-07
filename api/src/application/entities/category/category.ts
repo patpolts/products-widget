@@ -17,7 +17,7 @@ export class Category {
     private props: CategoryProps;
 
     constructor(props: Replace<CategoryProps, {
-        createdAt: Date;
+        createdAt?: Date;
         attributes?: CategoryAttribute[];
         parentId?: string | null;
         description?: string | null;
@@ -26,7 +26,13 @@ export class Category {
         if (!props.slug.trim()) throw new Error("Category slug cannot be empty");
         
         this._id = id ?? randomUUID();
-        this.props = props;
+        this.props = {
+            ...props,
+            createdAt: props.createdAt ?? new Date(),
+            attributes: props.attributes ?? [],
+            parentId: props.parentId ?? null,
+            description: props.description ?? null
+        };
     }
 
     get id(): string {
