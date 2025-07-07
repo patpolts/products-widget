@@ -1,85 +1,133 @@
-<template>
-    <div class="w-full p-4">
-        <div v-if="pending" class="text-center text-lg">Carregando produto...</div>
-        <div v-else-if="error" class="text-red-600 text-center font-semibold">{{ error.message || error }}</div>
-        <div v-else-if="product" class="max-w-4xl mx-auto">
-            <h1 class="text-4xl font-extrabold mb-4 text-center">{{ product.name }}</h1>
-            <p class="mb-6 text-gray-600 text-center max-w-xl mx-auto">{{ product.description }}</p>
-
-            <div
-                class="relative mx-auto max-w-full max-h-[400px] rounded-xl overflow-hidden shadow-lg select-none flex justify-center items-center">
-                <img v-if="currentImage" :src="currentImage.url" :alt="currentImage.altText || 'Imagem do produto'"
-                    class="max-w-full max-h-[400px] object-contain transition duration-300" />
-
-            </div>
-            <div>
-                <button v-if="product.images.length > 1" @click="prevImage" aria-label="Imagem anterior"
-                    class="absolute top-1/2 left-2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-80 text-white rounded-full w-10 h-10 flex items-center justify-center cursor-pointer transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="m11.25 9-3 3m0 0 3 3m-3-3h7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </button>
-
-                <button v-if="product.images.length > 1" @click="nextImage" aria-label="Próxima imagem"
-                    class="absolute top-1/2 right-2 -translate-y-1/2 bg-black bg-opacity-50 hover:bg-opacity-80 text-white rounded-full w-10 h-10 flex items-center justify-center cursor-pointer transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="m12.75 15 3-3m0 0-3-3m3 3h-7.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                    </svg>
-                </button>
-            </div>
-
-            <div v-if="product.images.length > 1"
-                class="text-center mt-2 text-gray-500 text-sm font-medium select-text max-w-lg mx-auto">
-                {{ currentIndex + 1 }} / {{ product.images.length }}
-            </div>
-
-            <div class="space-y-5 mt-8">
-                <h2 class="text-2xl font-semibold mb-3">Variações disponíveis:</h2>
-                <div v-for="sku in product.skus" :key="sku.id"
-                    class="border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition">
-                    <div><strong>Código:</strong> {{ sku.code }}</div>
-                    <div><strong>Preço:</strong> {{ formatPrice(sku.price) }}</div>
-                    <div><strong>Estoque:</strong> {{ sku.stock }}</div>
-                    <div v-if="sku.dimensions"><strong>Dimensões:</strong> {{ sku.dimensions }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useProducts } from '~/composables/useProducts'
 import { useFormat } from '~/composables/useFormat'
+import { useCategoryService } from '~/services/CategoryService'
+import { useProductService } from '~/services/ProductService'
+import type { Category } from '~/types/category'
+import type { Product } from '~/types/product'
 
 const route = useRoute()
-const { fetchProductById } = useProducts()
+const service = useProductService()
+const serviceCategory = useCategoryService()
+const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id ?? null
+
+const { data: product, pending: loading, error } = useAsyncData<Product>(
+    'product', async () => service.getBySlug(id)
+)
+const categoryId = computed(() => product.value?.category ?? null)
+const { data: category, pending: loadingCategory, error: errorCategory } = useAsyncData(
+  'category',
+  () => serviceCategory.getById(categoryId.value),
+)
 const { formatPrice } = useFormat()
 
-const { data, pending, error } = await useAsyncData('product', () =>
-    fetchProductById(route.params.id as string)
-)
-
-const product = computed(() => data.value?.product ?? null)
-const currentIndex = ref(0)
-
-const currentImage = computed(() => {
-    if (!product.value || !product.value.images.length) return null
-    return product.value.images[currentIndex.value]
-})
-
-function prevImage() {
-    if (!product.value) return
-    currentIndex.value = (currentIndex.value - 1 + product.value.images.length) % product.value.images.length
-}
-
-function nextImage() {
-    if (!product.value) return
-    currentIndex.value = (currentIndex.value + 1) % product.value.images.length
-}
 </script>
+
+<template>
+    <PageHeader title="Produto" description="Exibindo detalhes do produto" />
+    <PageHeader v-if="!product" title="404" description="Erro inesperado" />
+    <PageContent>
+        <UAlert v-if="error" title="Erro ao carregar produtos!" :description="error.message ?? 'Erro inesperado'"
+            icon="i-lucide-triangle-alert" />
+        <div v-else-if="loading" class="w-full h-auto text-center m-auto ">
+            <LoadingSpinner />
+        </div>
+        <section v-else-if="product" class="product-content m-auto p-0">
+            <Carousel v-if="product?.images && product.images.length > 0" carousel-class="product-content-carousel"
+                figure-class="m-auto w-full h-auto" :images="product.images" :loop="false" :autoplay="false"
+                :dots="false" :arrows="true" :prev="true" :next="true" :select="true" :thumbnails="true"
+                next-icon="lucide:circle-chevron-right" prev-icon="lucide:circle-chevron-left" />
+
+        </section>
+        <section v-if="product" class="product-content product-content-spacing mx-auto my-4 ">
+            <USeparator icon="lucide:ship-wheel" type="solid" />
+            <h1 class="font-bold tracking-wide text-xl text-tertiary dark:text-tertiary-100 text-shadow-sm mt-6">
+                {{ product.name }}
+            </h1>
+            <small><UBadge color="neutral" class="cursor-crosshair">{{product.id}}</UBadge></small>
+            <p class="font-light tracking-tight text-xl text-tertiary-400  mb-6">{{ product.description }}</p>
+            <div v-if="loadingCategory" class="w-full h-auto text-center m-auto ">
+                <LoadingSpinner />
+            </div>
+            <NuxtLink v-if="category" :to="`/category/${category.slug}`" target="_blank">
+                <UBadge icon="lucide:tags" size="xl" color="primary" variant="soft">
+                    {{ category.name }}
+                </UBadge> 
+            </NuxtLink>
+            <div v-else>
+                <p class="text-base p-2">Nanhuma categoria associada</p>
+            </div>
+            <h2 v-if="product.skus && product.skus.length > 0" class="font-semibold tracking-wide text-lg text-shadow-sm  text-tertiary dark:text-tertiary-50 my-6">Variações do produto</h2>
+            <h2 v-else class="font-semibold tracking-wide text-lg text-shadow-sm  text-tertiary dark:text-tertiary-50 my-6">Nenhuma variação para o produto encontrada</h2>
+            <div v-if="product.skus && product.skus.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <UCard variant="subtle" class="rounded-md bg-gray-100 dark:bg-secondary-700 inset-shadow-sm dark:shadow-gray"
+                    v-if="product.skus && product.skus.length > 0" v-for="sku in product.skus">
+                    <div class="p-2">
+                        <p class="text-left text-lg">
+                            <strong>SKU ID: </strong>
+                            {{ sku.id }}
+                        </p>
+                        <p class="text-left text-lg">
+                            <strong>SKU Code: </strong>
+                            {{ sku.code }}
+                        </p>
+                        <p class="text-left text-lg">
+                            <strong>Preço: </strong>
+                            {{ formatPrice(sku.price) }}
+                        </p>
+                        <p class="text-left text-lg" :class="sku.stock > 10 && 'text-danger'">
+                            <strong>Estoque: </strong>
+                            {{ sku.stock}}
+                        </p>
+                        <p v-if="sku.color" class="text-left text-lg">
+                            <strong>Cor: </strong>
+                            {{ sku.color }}
+                        </p>
+                        <p v-if="sku.size" class="text-left text-lg">
+                            <strong>Tamanho: </strong>
+                            {{ sku.size }}
+                        </p>
+                        <p v-if="sku.dimensions" class="text-left text-lg">
+                            <strong>Dimensões: </strong>
+                            {{ sku.dimensions }}
+                        </p>
+                    </div>
+                </UCard>
+                <!-- <UCard :key="sku.id" variant="solid" class="rounded-md bg-secondary-200 w-full"> -->
+
+                <!--
+                        
+                            <UBadge icon="lucide:circle-dollar-sign" size="xl" color="primary" 
+                                variant="outline" class="text-sm font-medium" >
+                                {{ formatPrice(sku.price) }}
+                            </UBadge>   
+                            <UBadge icon="lucide:boxes" size="lg" color="primary" 
+                                variant="outline"
+                            class="text-sm font-medium"  >
+                                {{ sku.stock }}
+                            </UBadge>
+                            <UBadge v-if="sku.color" icon="lucide:palette" size="lg"
+                                    color="primary" variant="outline" class="text-sm font-medium" >
+                                {{ sku.color }}
+                            </UBadge>
+                            <UBadge icon="lucide:ticket" size="lg" color="primary"
+                                variant="outline" v-if="sku.size" class="text-sm font-medium" >
+                                {{ sku.size }}
+                            </UBadge>
+                            <UBadge v-if="sku.dimensions" icon="lucide:pencil-ruler" size="lg" 
+                                color="primary" variant="outline" class="text-sm font-medium"  >
+                                {{ sku.dimensions }}
+                            </UBadge> -->
+                <!-- </template>
+                </UCard> -->
+
+            </div>
+        </section>
+        <section v-else class="p-4 text-center">
+            <p class="text-lg text-info-900"> Produto não encontrado</p>
+        </section>
+        <section>
+            <BackButton />
+        </section>
+    </PageContent>
+</template>

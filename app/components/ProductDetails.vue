@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { Product, ProductImage } from '~/view-models/product';
+import type { Product, ProductImage } from '~/types/product';
 
 const props = defineProps<{ product: Product }>()
 

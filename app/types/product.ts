@@ -1,11 +1,19 @@
+export type PlaceHolderImage = { url: string;}
+
+export interface ProductPagination{
+    page: number;
+    limit: number;
+    total: number;
+    lastPage: number;
+}
 export interface Product {
     id: string;
     name: string;
     description: string;
-    slug: string;
-    category: string;
-    skus: ProductSku[];
-    images: ProductImage[];
+    slug?: string;
+    category?: string;
+    skus?: ProductSku[];
+    images?: ProductImage[];
 }
 
 export interface ProductSku {
@@ -29,7 +37,8 @@ export interface ProductImage {
 }
 
 export interface ProductListDTO{
-    product: Product[]
+    product: Product[],
+    pagination: ProductPagination;
 }
 export interface ProductDTO{
     product: Product

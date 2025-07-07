@@ -4,10 +4,12 @@ import BaseLink from '~/components/ui/BaseLink.vue';
 
 <template>
     <UContainer class="relative h-screen flex flex-col  ">
-        <header class="text-primary font-semibold text-2xl md:text-4xl font-bold-700 tracking-wide flex flex-row flex-items-center justify-between">
-            <NuxtLink to="/">
-                Widget Produtos
-            </NuxtLink>
+        <header class="flex flex-row flex-items-center justify-between">
+            <h1>
+                <NuxtLink to="/" aria-label="Ir para a home">
+                    Widget Produtos
+                </NuxtLink>
+            </h1>
             <ColorModeButton />
         </header>
         <main>

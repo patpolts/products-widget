@@ -6,12 +6,12 @@ interface PageHeaderProps {
 const props = defineProps<PageHeaderProps>();
 </script>
 <template>
-    <UContainer as="section" class="mx-auto my-0">
-        <h1 class="text-secondary text-3xl">
+    <UContainer as="section" class="page-header">
+        <h1>
             <slot>{{ props.title }}</slot>
         </h1>
-        <p v-if="props.description" class="text-sm text-neutral">
-            <slot>{{ props.description }}</slot>
+        <p v-if="props.description">
+            {{ props.description }}
         </p>
     </UContainer>
 </template>
